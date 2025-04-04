@@ -2,6 +2,8 @@
 -s localhost
 -t tcp -s localhost -h
 -t tcp -s localhost -p 456a
+-t tcp -s localhost -p 65536
+-t tcp -s localhost -p -1
 -t tcp -s localhost -d 45s
 -t tcp -s localhost -d -45
 -t tcp -s localhost -d 65536
@@ -23,3 +25,6 @@
 -t tcp -s localhost -d 34 -d 48
 -t tcp -s localhost -x
 -t tcp -p -s localhost 
+-t tcp -p 46 -s localhost test
+test -t tcp -p 46 -s localhost
+test -t tcp -p 46 -s localhost test

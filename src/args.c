@@ -16,97 +16,67 @@ static void print_help(void) {
     exit(0);
 }
 
+static bool set_protocol(void) {
+    if (strcmp(optarg, "tcp") == 0) {
+        parameters.tcp = true;
+        return true;
+    } else if (strcmp(optarg, "udp") == 0) {
+        parameters.tcp = false;
+        return true;
+    } 
+    fprintf(stderr, "ERROR: invalid protocol\n");
+    return false;
+}
+
+bool parse_int(long max, long *out) {
+    char *endptr;
+    long val = strtol(optarg, &endptr, 10);
+    if (errno != 0 || *endptr != '\0' || val < 0 || val > max) {
+        fprintf(stderr, "ERROR: invalid -%c value\n", optopt);
+        return false;
+    }
+    *out = val;
+    return true;
+}
+
 int process_args(int argc, char **argv) {
     parameters_setup();
     int opt;
+    long result;
 
-    bool protocol_set = false, timeout_set = false, retransmissions_set = false, help_set = false, only_opt = true;
+    bool protocol_set = false, timeout_set = false, retransmissions_set = false, help_set = false, only_opt = true, port_set = false;
 
     while((opt = getopt(argc, argv, ":t:s:p:d:r:h")) != -1) {
         switch(opt) {
             case 't':
-                if (optarg == NULL || optarg[0] == '-') {
-                    fprintf(stderr, "ERROR: missing protocol parameter\n");
+                CHECK_OPTARG_AND_REDEF(protocol_set)
+                if (!set_protocol()) {
                     return EXIT_FAILURE;
-                } else if (protocol_set) {
-                    fprintf(stderr, "ERROR: redefinition of protocol\n");
-                    return EXIT_FAILURE;
-                } else {
-                    if (strcmp(optarg, "tcp") == 0) {
-                        parameters.tcp = true;
-                    } else if (strcmp(optarg, "udp") == 0) {
-                        parameters.tcp = false;
-                    } else {
-                        fprintf(stderr, "ERROR: invalid protocol\n");
-                        return EXIT_FAILURE;
-                    }
-                    protocol_set = true;
-                    only_opt = false;
                 }
+                protocol_set = true;
+                only_opt = false;
                 break;
             case 's':
-                if (optarg == NULL || optarg[0] == '-') {
-                    fprintf(stderr, "ERROR: missing ip/domain name parameter\n");
-                    return EXIT_FAILURE;
-                } else if (parameters.ip_or_domain != NULL) {
-                    fprintf(stderr, "ERROR: redefinition of ip/domain name\n");
-                    return EXIT_FAILURE;
-                } else {
-                    parameters.ip_or_domain = optarg;
-                    only_opt = false;
-                }
+                CHECK_OPTARG_AND_REDEF(parameters.ip_or_domain)
+                parameters.ip_or_domain = optarg;
+                only_opt = false;
                 break;
             case 'p':
-                if (optarg == NULL || optarg[0] == '-') {
-                    fprintf(stderr, "ERROR: missing port parameter\n");
-                    return EXIT_FAILURE;
-                } else if (parameters.port != NULL) {
-                    fprintf(stderr, "ERROR: redefinition of port\n");
-                    return EXIT_FAILURE;
-                } else {
-                    free(parameters.port);
-                    parameters.port = optarg;
-                    only_opt = false;
-                }
+                CHECK_OPTARG_AND_REDEF(port_set)
+                PARSE_NUMBER(result, long, UINT16_MAX)
+                free(parameters.port);
+                parameters.port = optarg;
+                port_set = true;
                 break;
             case 'd':
-                if (optarg == NULL || optarg[0] == '-') {
-                    fprintf(stderr, "ERROR: missing timeout parameter\n");
-                    return EXIT_FAILURE;
-                } else if (timeout_set) {
-                    fprintf(stderr, "ERROR: redefinition of timeout\n");
-                    return EXIT_FAILURE;
-                } else {
-                    char *endptr;
-                    long timeout = strtol(optarg, &endptr, 10);
-                    if (errno != 0 || *endptr != '\0' || timeout < 0 || timeout > UINT16_MAX) {
-                        fprintf(stderr, "ERROR: invalid timeout value\n");
-                        return EXIT_FAILURE;
-                    }
-
-                    parameters.timeout = (uint16_t)timeout;
-                    timeout_set = true;
-                    only_opt = false;
-                }
+                CHECK_OPTARG_AND_REDEF(timeout_set)
+                PARSE_NUMBER(parameters.timeout, uint16_t, UINT16_MAX)
+                timeout_set = true;
                 break;
             case 'r':
-                if (optarg == NULL || optarg[0] == '-') {
-                    fprintf(stderr, "ERROR: missing retransmissions parameter\n");
-                    return EXIT_FAILURE;
-                } else if (retransmissions_set) {
-                    fprintf(stderr, "ERROR: redefinition of retransmissions\n");
-                    return EXIT_FAILURE;
-                } else {
-                    char *endptr;
-                    long retransmissions = strtol(optarg, &endptr, 10);
-                    if (errno != 0 || *endptr != '\0' || retransmissions < 0 || retransmissions > UINT8_MAX) {
-                        fprintf(stderr, "ERROR: invalid retransmissions value\n");
-                        return EXIT_FAILURE;
-                    }
-                    parameters.retransmissions = (uint8_t)retransmissions;
-                    retransmissions_set = true;
-                    only_opt = false;
-                }
+                CHECK_OPTARG_AND_REDEF(retransmissions_set)
+                PARSE_NUMBER(parameters.retransmissions, uint8_t, UINT8_MAX)
+                retransmissions_set = true;
                 break;
             case 'h':
                 if (help_set) {
@@ -133,6 +103,10 @@ int process_args(int argc, char **argv) {
     }
     if (!protocol_set || parameters.ip_or_domain == NULL) {
         fprintf(stderr, "ERROR: missing required parameters\n");
+        return EXIT_FAILURE;
+    }
+    if (optind != argc) {
+        fprintf(stderr, "ERROR: unknown parameters after options\n");
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

@@ -20,6 +20,22 @@ typedef struct parameters {
 
 extern parameters_t parameters;
 
+#define CHECK_OPTARG_AND_REDEF(condition)                           \
+    if (optarg == NULL || optarg[0] == '-') {                       \
+        fprintf(stderr, "ERROR: missing -%c parameter\n", optopt);  \
+        return EXIT_FAILURE;                                        \
+    } else if (condition) {                                         \
+        fprintf(stderr, "ERROR: redefinition of -%c\n", optopt);    \
+        return EXIT_FAILURE;                                        \
+    }
+
+#define PARSE_NUMBER(dst, type, max)\
+    if (!parse_int(max, &result)) {\
+        return EXIT_FAILURE;\
+    }\
+    dst = (type)result;\
+    only_opt = false;
+
 int process_args(int argc, char **argv);
 
 #endif
