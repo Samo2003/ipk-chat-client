@@ -1,0 +1,3 @@
+-t tcp
+-s localhost
+-t tcp -s localhost -h
