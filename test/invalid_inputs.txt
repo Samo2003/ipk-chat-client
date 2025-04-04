@@ -1,3 +1,25 @@
 -t tcp
 -s localhost
 -t tcp -s localhost -h
+-t tcp -s localhost -p 456a
+-t tcp -s localhost -d 45s
+-t tcp -s localhost -d -45
+-t tcp -s localhost -d 65536
+-t tcp -s localhost -r -1
+-t tcp -s localhost -r 256
+-t tcp -s localhost -r 25a
+-t tcp -s localhost -r 
+-t tcp -s localhost -d
+-h -t tcp -s localhost
+-t tcp -s localhost -t udp
+-t tcp -s localhost -t tcp
+-t tcp -s localhost -t tcp
+-t tc -s localhost
+-t tcp -s localhost -s test
+-t tcp -s localhost -s test
+-h -h
+-t tcp -s localhost -p 34 -p 48
+-t tcp -s localhost -r 34 -r 48
+-t tcp -s localhost -d 34 -d 48
+-t tcp -s localhost -x
+-t tcp -p -s localhost 

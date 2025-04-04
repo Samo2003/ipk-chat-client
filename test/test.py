@@ -23,12 +23,12 @@ def test_invalid_input(args: str):
 
     try:
         subprocess.run([CHAT] + args.split(), check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError:
-        print(f"TEST {invalid_tests}: {GREEN}[PASS]{RESET}")
+    except subprocess.CalledProcessError as e:
+        print(f"TEST {invalid_tests}: \t{GREEN}[PASS]{RESET} \t{e.stderr}", end="")
         successful_invalid_tests += 1
         return
 
-    print(f"TEST {invalid_tests}: {RED}[FAIL]{RESET} args: {args}")
+    print(f"TEST {invalid_tests}: \t{RED}[FAIL]{RESET} \targs: {args}")
     
 print("Testing invalid inputs:")
 for invalid in INVALID_TESTS:
