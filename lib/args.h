@@ -1,14 +1,7 @@
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <errno.h>
+#include "common.h"
 
 typedef struct parameters {
     bool tcp;
@@ -29,11 +22,11 @@ extern parameters_t parameters;
         return EXIT_FAILURE;                                        \
     }
 
-#define PARSE_NUMBER(dst, type, max)\
-    if (!parse_int(max, &result)) {\
-        return EXIT_FAILURE;\
-    }\
-    dst = (type)result;\
+#define PARSE_NUMBER(dst, type, max)                                \
+    if (!parse_int(max, &result)) {                                 \
+        return EXIT_FAILURE;                                        \
+    }                                                               \
+    dst = (type)result;                                             \
     only_opt = false;
 
 int process_args(int argc, char **argv);

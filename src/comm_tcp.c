@@ -1,0 +1,66 @@
+#include "../lib/comm_tcp.h"
+
+const msg_temp_t msg_temp[] = {
+    {REPLY, "REPLY OK IS %s\r\n", parse_reply},
+    {NREPLY, "REPLY NOK IS %s\r\n", parse_nreply},
+    {AUTH, "AUTH %s AS %s USING %s\r\n", parse_unexpected},
+    {JOIN, "JOIN %s AS %s\r\n", parse_unexpected},
+    {MSG, "MSG FROM %s IS %s\r\n", parse_msg},
+    {ERR, "ERR FROM %s IS %s\r\n", parse_err},
+    {BYE, "BYE FROM %s\r\n", parse_bye}
+};
+
+struct addrinfo *tcp_setup(int *sock_fd) {
+    *sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (*sock_fd <= 0) {
+        perror("ERROR: TCP socket");
+        return NULL;
+    }
+    struct addrinfo *res = NULL;
+    struct addrinfo hints = {0};
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(parameters.ip_or_domain, parameters.port, &hints, &res) != 0) {
+        perror("ERROR: getaddrinfo");
+        return NULL;
+    }
+    if (connect(*sock_fd, res->ai_addr, res->ai_addrlen) != 0) {
+        perror("ERROR: connect");
+        freeaddrinfo(res);
+        return NULL;
+    }
+    return res;
+}
+
+void tcp_clean_up(int sock_fd) {
+    shutdown(sock_fd, SHUT_RD);
+    shutdown(sock_fd, SHUT_WR);
+    shutdown(sock_fd, SHUT_RDWR);
+}
+
+int tcp_send_msg(msg_type_t type, int sock_fd) {
+    int len;
+    char *msg = tcp_build_msg(type, &len);
+    PTR_CHECK(msg)
+    if (send(sock_fd, msg, len, 0) != len) {
+        perror("ERROR: send");
+        free(msg);
+        return EXIT_FAILURE;
+    }
+    free(msg);
+    return EXIT_SUCCESS;
+}
+
+msg_type_t tcp_recv_msg(int sock_fd) {
+    char buffer[BUFFER_SIZE] = {'\0'};
+    size_t b_rcv = recv(sock_fd, buffer, BUFFER_SIZE - 1, 0);
+    if (b_rcv > 0) {
+        for (int i = 0; i < TEMP_COUNT; i++) {
+            if (strncmp(buffer, msg_temp[i].temp, strlen(msg_temp[i].temp)) == 0) {
+                return msg_temp[i].parse_func(buffer);
+            }
+        }
+    }
+    return ERROR;
+}
