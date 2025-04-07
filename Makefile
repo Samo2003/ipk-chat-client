@@ -2,7 +2,7 @@ CC = gcc
 PYTHON = python3
 CFLAGS = -std=c17 -Wextra -Wall -pedantic -g
 
-TARGET = ipk-25-chat
+TARGET = ipk25chat-client
 LOGIN = xstefas00
 
 TESTDIR = test
