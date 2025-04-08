@@ -4,6 +4,8 @@
 #include "comm.h"
 #include "input.h"
 
+#include <sys/time.h>
+
 typedef enum {
     USER,
     SERVER,
@@ -15,7 +17,7 @@ typedef struct prompt {
     msg_type_t type;
 } prompt_t;
 
-extern bool proccesing;
+extern bool processing;
 
 prompt_t await(void);
 

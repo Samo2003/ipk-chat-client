@@ -1,13 +1,13 @@
 #include "../lib/comm_tcp.h"
 
 const msg_temp_t msg_temp[] = {
-    {REPLY, "REPLY OK IS %s\r\n", parse_reply},
-    {NREPLY, "REPLY NOK IS %s\r\n", parse_nreply},
-    {AUTH, "AUTH %s AS %s USING %s\r\n", parse_unexpected},
-    {JOIN, "JOIN %s AS %s\r\n", parse_unexpected},
-    {MSG, "MSG FROM %s IS %s\r\n", parse_msg},
-    {ERR, "ERR FROM %s IS %s\r\n", parse_err},
-    {BYE, "BYE FROM %s\r\n", parse_bye}
+    {REPLY, "REPLY OK IS %s\r\n", 7, parse_reply},
+    {NREPLY, "REPLY NOK IS %s\r\n", 7, parse_nreply},
+    {AUTH, "AUTH %s AS %s USING %s\r\n", 4, parse_unexpected},
+    {JOIN, "JOIN %s AS %s\r\n", 4, parse_unexpected},
+    {MSG, "MSG FROM %s IS %s\r\n", 3, parse_msg},
+    {ERR, "ERR FROM %s IS %s\r\n", 3, parse_err},
+    {BYE, "BYE FROM %s\r\n", 3, parse_bye}
 };
 
 struct addrinfo *tcp_setup(int *sock_fd) {
@@ -57,7 +57,7 @@ msg_type_t tcp_recv_msg(int sock_fd) {
     size_t b_rcv = recv(sock_fd, buffer, BUFFER_SIZE - 1, 0);
     if (b_rcv > 0) {
         for (int i = 0; i < TEMP_COUNT; i++) {
-            if (strncmp(buffer, msg_temp[i].temp, strlen(msg_temp[i].temp)) == 0) {
+            if (strncmp(buffer, msg_temp[i].temp, msg_temp[i].len) == 0) {
                 return msg_temp[i].parse_func(buffer);
             }
         }

@@ -10,6 +10,7 @@ typedef msg_type_t (*parse)(char *buffer);
 typedef struct msg_temp{
     msg_type_t type;
     const char *temp;
+    size_t len;
     parse parse_func;
 } msg_temp_t;
 

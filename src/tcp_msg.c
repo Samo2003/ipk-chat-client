@@ -24,7 +24,7 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
             len = snprintf(NULL, 0, temp, client.username, client.display_name, client.secret);
             break;
         case JOIN:
-            len = snprintf(NULL, 0, temp, client.chanel_ID, client.display_name);
+            len = snprintf(NULL, 0, temp, client.channel_ID, client.display_name);
             break;
         case BYE:
             len = snprintf(NULL, 0, temp, client.display_name);
@@ -49,7 +49,7 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
             snprintf(message, len + 1, temp, client.username, client.display_name, client.secret);
             break;
         case JOIN:
-            snprintf(message, len + 1, temp, client.chanel_ID, client.display_name);
+            snprintf(message, len + 1, temp, client.channel_ID, client.display_name);
             break;
         case BYE:
             snprintf(message, len + 1, temp, client.display_name);
@@ -64,8 +64,8 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
 }
 
 msg_type_t parse_reply(char *buffer) {
-    char msg_content[512];
-    if (sscanf(buffer, "REPLY OK IS %511[^\r]", msg_content) == 1) {
+    char msg_content[60001];
+    if (sscanf(buffer, "REPLY OK IS %60000[^\r]", msg_content) == 1) {
         fprintf(stdout, "Action Success: %s\n", msg_content);
         return REPLY;
     }
@@ -73,8 +73,8 @@ msg_type_t parse_reply(char *buffer) {
 }
 
 msg_type_t parse_nreply(char *buffer) {
-    char message_content[512];
-    if (sscanf(buffer, "REPLY NOK IS %511[^\r]", message_content) == 1) {
+    char message_content[60001];
+    if (sscanf(buffer, "REPLY NOK IS %60000[^\r]", message_content) == 1) {
         fprintf(stdout, "Action Failure: %s\n", message_content);
         return NREPLY;
     }
@@ -88,8 +88,8 @@ msg_type_t parse_unexpected(char *buffer) {
 
 msg_type_t parse_msg(char *buffer) {
     char display_name[21];
-    char msg_content[512];
-    if (sscanf(buffer, "MSG FROM %20s IS %511[^\r]", display_name, msg_content) == 2) {
+    char msg_content[60001];
+    if (sscanf(buffer, "MSG FROM %20s IS %60000[^\r]", display_name, msg_content) == 2) {
         fprintf(stdout, "%s: %s\n", display_name, msg_content);
         return MSG;
     }
@@ -98,8 +98,8 @@ msg_type_t parse_msg(char *buffer) {
 
 msg_type_t parse_err(char *buffer) {
     char display_name[21];
-    char msg_content[512];
-    if (sscanf(buffer, "ERR FROM %20s IS %511[^\r]", display_name, msg_content) == 2) {
+    char msg_content[60001];
+    if (sscanf(buffer, "ERR FROM %20s IS %60000[^\r]", display_name, msg_content) == 2) {
         fprintf(stdout, "ERROR FROM %s: %s\n", display_name, msg_content);
         return ERR;
     }

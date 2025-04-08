@@ -36,7 +36,7 @@ bool is_valid_msg_content(char *str, size_t max_len) {
     return true;
 }
 
-static void copy(char *dest, char *src, size_t size) {
+void copy(char *dest, char *src, size_t size) {
     strncpy(dest, src, size - 1);
     dest[size - 1] = '\0';
 }
@@ -101,6 +101,10 @@ msg_type_t parse_user_input(void) {
     size_t len = 0;
 
     if (getline(&line, &len, stdin) < 0) {
+        if (feof(stdin)) {
+            interrupt = 1;
+            return LOCAL;
+        }
         perror("readline error");
         return ERROR;
     }
@@ -115,14 +119,13 @@ msg_type_t parse_user_input(void) {
         token = strtok(NULL, " ");
     }
     if (!tokens[0]) {
-        fprintf(stdout, "ERROR: Invalid input");
+        fprintf(stdout, "ERROR: Invalid input\n");
         return LOCAL;
     }
 
-    msg_type_t ret = ERROR;
     for (int i = 0; i < COMMAND_COUNT; i++) {
         if (strcmp(tokens[0], command[i].cmd) == 0) {
-            ret = command[i].parse(&tokens[1]);
+            msg_type_t ret = command[i].parse(&tokens[1]);
             free(line);
             free(orig_line);
             return ret;

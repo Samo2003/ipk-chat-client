@@ -1,7 +1,7 @@
 #include "../lib/comm.h"
 
 comm_t *get_comm(void) {
-    static comm_t comm;
+    static comm_t comm = {0};
     if (parameters.tcp) {
         comm.setup = tcp_setup;
         comm.clean_up = tcp_clean_up;
@@ -13,12 +13,17 @@ comm_t *get_comm(void) {
         // comm.send_msg = udp_send_msg;
         // comm.recv_msg = udp_recv_msg;
     }
+    comm.res = comm.setup(&comm.socket);
+    if (comm.res == NULL) {
+        return NULL;
+    }
+    comm.processing = false;
     return &comm;
 }
 
 void clean_up_comm(void) {
-    comm->send_msg(BYE, comm->socket);
     comm->clean_up(comm->socket);
     freeaddrinfo(comm->res);
     close(comm->socket);
+    tcflush(STDIN_FILENO, TCIFLUSH);
 }

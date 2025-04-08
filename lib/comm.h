@@ -3,6 +3,7 @@
 
 #include "comm_tcp.h"
 #include "args.h"
+#include <termios.h>
 
 typedef struct comm {
     struct addrinfo *(*setup)(int *sock_fd);
@@ -11,6 +12,7 @@ typedef struct comm {
     msg_type_t (*recv_msg)(int sock_fd);
     int socket;
     struct addrinfo *res;
+    bool processing;
 } comm_t;
 
 extern comm_t *comm;
