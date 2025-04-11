@@ -34,31 +34,41 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
             return NULL;
     }
 
+    if (len > MAX_TCP_PACKET_SIZE) {
+        len = MAX_TCP_PACKET_SIZE;
+        fprintf(stdout, "ERROR: Input massage content was too long truncated massage sent\n");
+    }
     msg = malloc(len + 1);
     if (!msg) {
         return NULL;
     }
-
+    int written = 0;
     switch (type) {
         case ERR:
         case MSG:
-            snprintf(msg, len + 1, temp, client.display_name, client.msg_content);
+            written = snprintf(msg, len + 1, temp, client.display_name, client.msg_content);
             break;
         case AUTH:
-            snprintf(msg, len + 1, temp, client.username, client.display_name, client.secret);
+            written = snprintf(msg, len + 1, temp, client.username, client.display_name, client.secret);
             break;
         case JOIN:
-            snprintf(msg, len + 1, temp, client.channel_ID, client.display_name);
+            written = snprintf(msg, len + 1, temp, client.channel_ID, client.display_name);
             break;
         case BYE:
-            snprintf(msg, len + 1, temp, client.display_name);
+            written = snprintf(msg, len + 1, temp, client.display_name);
             break;
         default:
             fprintf(stderr, "ERROR: unknown message type\n");
+            free(msg);
             return NULL;
     }
+    if (written > len - 2) {
+        written = len - 2;
+    }
+    memcpy(msg + written, "\r\n", 2);
+    msg[written + 2] = '\0';
 
-    *msg_len = len + 1;
+    *msg_len = written + 2;
     return msg;
 }
 
