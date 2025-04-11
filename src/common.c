@@ -1,8 +1,8 @@
 #include "../lib/common.h"
 
 
-bool is_valid_alphanum_underscore(char *str, size_t max_len) {
-    if (strlen(str) > max_len || strlen(str) < 1) {
+bool is_valid_alphanum_underscore(char *str, int max_len) {
+    if ((int)strlen(str) > max_len || strlen(str) < 1) {
         return false;
     }
     for (int i = 0; str[i]; i++) {
@@ -13,8 +13,8 @@ bool is_valid_alphanum_underscore(char *str, size_t max_len) {
     return true;
 }
 
-bool is_valid_printable(char *str, size_t max_len) {
-    if (strlen(str) > max_len || strlen(str) < 1) {
+bool is_valid_printable(char *str, int max_len) {
+    if ((int)strlen(str) > max_len || strlen(str) < 1) {
         return false;
     }
     for (int i = 0; str[i]; i++) {
@@ -25,8 +25,8 @@ bool is_valid_printable(char *str, size_t max_len) {
     return true;
 }
 
-bool is_valid_msg_content(char *str, size_t max_len) {
-    if (strlen(str) > max_len || strlen(str) < 1) {
+bool is_valid_msg_content(char *str, int max_len) {
+    if ((int)strlen(str) > max_len || strlen(str) < 1) {
         return false;
     }
     for (int i = 0; str[i]; i++) {
@@ -37,7 +37,7 @@ bool is_valid_msg_content(char *str, size_t max_len) {
     return true;
 }
 
-void copy(char *dest, char *src, size_t size) {
+void copy(char *dest, char *src, int size) {
     strncpy(dest, src, size - 1);
     dest[size - 1] = '\0';
 }

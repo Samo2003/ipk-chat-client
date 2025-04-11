@@ -1,12 +1,7 @@
 #include "../lib/args.h"
 
 static void parameters_setup(void) {
-    parameters.port = malloc(sizeof(char) * 4);
-    if (parameters.port == NULL) {
-        fprintf(stderr, "ERROR: memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-    strcpy(parameters.port, "4567");
+    parameters.port = "4567";
     parameters.timeout = 250;
     parameters.retransmissions = 3;
 }
@@ -64,7 +59,6 @@ int process_args(int argc, char **argv) {
             case 'p':
                 CHECK_OPTARG_AND_REDEF(port_set)
                 PARSE_NUMBER(result, long, UINT16_MAX)
-                free(parameters.port);
                 parameters.port = optarg;
                 port_set = true;
                 break;

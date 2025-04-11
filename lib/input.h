@@ -10,7 +10,7 @@ typedef struct {
     msg_type_t (*parse)(char **args);
 } command_t;
 
-extern volatile sig_atomic_t interrupt;
+extern volatile int interrupt;
 
 msg_type_t parse_user_input(void);
 

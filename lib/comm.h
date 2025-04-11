@@ -13,6 +13,7 @@ typedef struct comm {
     msg_type_t (*recv_msg)(int sock_fd);
     int socket;
     bool processing;
+    bool incomplete;
 } comm_t;
 
 extern comm_t *comm;

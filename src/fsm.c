@@ -127,7 +127,7 @@ int fsm_start(void) {
     copy(client.display_name, "unknown", sizeof(client.display_name));
 
     while (state && res == 0) {
-        if (!comm->processing && interrupt == 1) {
+        if (!comm->processing && !comm->incomplete && interrupt == 1) {
             state = state_interupt;
         }
         res = state();

@@ -14,8 +14,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <signal.h>
 
-#define BUFFER_SIZE 1500
 #define MAX_NAME_SIZE 20
 #define MAX_SECRET_SIZE 128
 #define MAX_MSG_SIZE 60000
@@ -53,10 +53,9 @@ extern client_t client;
         return EXIT_FAILURE;                                    \
     }
 
-
-bool is_valid_alphanum_underscore(char *str, size_t max_len);
-bool is_valid_printable(char *str, size_t max_len);
-bool is_valid_msg_content(char *str, size_t max_len);
-void copy(char *dest, char *src, size_t size);
+bool is_valid_alphanum_underscore(char *str, int max_len);
+bool is_valid_printable(char *str, int max_len);
+bool is_valid_msg_content(char *str, int max_len);
+void copy(char *dest, char *src, int size);
 
 #endif

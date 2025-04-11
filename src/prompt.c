@@ -25,31 +25,40 @@ prompt_t await(void) {
     prompt_t prompt = {0};
     prompt.input_type = SERVER;
     int fd_count;
+    char *msg;
     
     struct timeval start_time, remaining_time, *ptr = NULL;
 
     if (!queue_is_empty()) {
-        char *msg;
         int len;
         queue_front(&msg, &len);
-        prompt.type = udp_process_queued_msg(msg, len);
+        prompt.type = udp_process_msg(msg, len, false);
         free(msg);
         return prompt;
+    } else if ((msg = buffer_get_msg())) {
+        prompt.type = tcp_process_msg(msg);
+        free(msg);
+        comm->incomplete = !buffer_is_empty();
+        return prompt;
+    } else {
+        comm->incomplete = !buffer_is_empty();
     }
 
-    if (comm->processing) {
+    bool require_response = comm->processing || comm->incomplete;
+
+    if (require_response) {
         gettimeofday(&start_time, NULL);
         ptr = &remaining_time;
     }
 
     while(true) {
-        if (comm->processing) {
+        if (require_response) {
             calculate_remaining_time(&start_time, &remaining_time);
         }
         
         FD_ZERO(&fd_descs);
         FD_SET(comm->socket, &fd_descs);
-        if (!comm->processing) {
+        if (!require_response) {
             FD_SET(STDIN_FILENO, &fd_descs);
         }
 
@@ -57,7 +66,7 @@ prompt_t await(void) {
 
         if (fd_count == -1) {
             if (errno == EINTR) {
-                if (!comm->processing) {
+                if (!require_response) {
                     prompt.type = LOCAL;
                     return prompt;
                 }
@@ -67,7 +76,7 @@ prompt_t await(void) {
                 return prompt;
             }
         }
-        if (fd_count == 0 && comm->processing) {
+        if (fd_count == 0 && require_response) {
             fprintf(stdout, "ERROR: Server is not responding\n");
             prompt.type = ERROR;
             return prompt;
@@ -79,7 +88,7 @@ prompt_t await(void) {
             }
             return prompt;
         }
-        if (!comm->processing && FD_ISSET(STDIN_FILENO, &fd_descs)) {
+        if (!require_response && FD_ISSET(STDIN_FILENO, &fd_descs)) {
             prompt.input_type = USER;
             prompt.type = parse_user_input();
             return prompt;

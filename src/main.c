@@ -3,7 +3,7 @@
 parameters_t parameters = {0};
 comm_t *comm;
 client_t client = {0};
-volatile sig_atomic_t interrupt = 0;
+volatile int interrupt = 0;
 
 void interrupt_handle(int sig) {
     (void)sig;

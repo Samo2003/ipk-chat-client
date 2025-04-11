@@ -8,6 +8,9 @@
 
 #define MSG_COUNT 8
 
+// UDP MSG format
+#define UDP_BUFFER_SIZE HEADER_SIZE + MAX_NAME_SIZE + ZERO_BYTE + MAX_MSG_SIZE + ZERO_BYTE
+
 typedef msg_type_t (*udp_parse)(char *buffer, int msg_len);
 
 typedef struct udp_msg{
@@ -21,6 +24,6 @@ int udp_setup(void);
 void udp_clean_up(int sock_fd);
 int udp_send_msg(msg_type_t type, int sock_fd);
 msg_type_t udp_recv_msg(int sock_fd);
-msg_type_t udp_process_queued_msg(char *buffer, int msg_len);
+msg_type_t udp_process_msg(char *buffer, int msg_len, bool store);
 
 #endif

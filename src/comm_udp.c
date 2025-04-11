@@ -68,9 +68,9 @@ int udp_send_msg(msg_type_t type, int sock_fd) {
             }
         }
         resend = true;
-        char buffer[BUFFER_SIZE] = {'0'};
+        char buffer[UDP_BUFFER_SIZE] = {'0'};
 
-        int b_rcv = recvfrom(sock_fd, buffer, BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
+        int b_rcv = recvfrom(sock_fd, buffer, UDP_BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
         if (b_rcv > 0) {
             if (b_rcv == 3 && buffer[0] == CONFIRM && client.msg_id == to_uint16(&buffer[1])) {
                 client.msg_id++;
@@ -102,33 +102,29 @@ int udp_send_msg(msg_type_t type, int sock_fd) {
 }
 
 msg_type_t udp_recv_msg(int sock_fd) {
-    char buffer[BUFFER_SIZE] = {'\0'};
-    int b_rcv = recvfrom(sock_fd, buffer, BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
+    char buffer[UDP_BUFFER_SIZE] = {'\0'};
+    int b_rcv = recvfrom(sock_fd, buffer, UDP_BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
     if (b_rcv >= HEADER_SIZE) {
-        for (int i = 0; i < MSG_COUNT; i++) {
-            if ((uint8_t)buffer[0] == msg[i].type) {
-                if (msg[i].type != CONFIRM) {
-                    if (send_confirm(sock_fd, to_uint16(&buffer[1])) != EXIT_SUCCESS) {
-                        return ERROR;
-                    }
-                    if (list_contains(to_uint16(&buffer[1]))) {
-                        return LOCAL;
-                    }
-                    if (list_append(to_uint16(&buffer[1])) != EXIT_SUCCESS) {
-                        return ERROR;
-                    }
-                }
-                return msg[i].parse_func(buffer, b_rcv);
-            }
+        if (buffer[0] != CONFIRM && send_confirm(sock_fd, to_uint16(&buffer[1])) != EXIT_SUCCESS) {
+            return ERROR;
         }
+        return udp_process_msg(buffer, b_rcv, true);
     }
-    fprintf(stdout, "ERROR: Unknown message\n");
+    fprintf(stdout, "ERROR: recvfrom fault\n");
     return ERROR;
 }
 
-msg_type_t udp_process_queued_msg(char *buffer, int msg_len) {
+msg_type_t udp_process_msg(char *buffer, int msg_len, bool store) {
     for (int i = 0; i < MSG_COUNT; i++) {
         if ((uint8_t)buffer[0] == msg[i].type) {
+            if (store) {
+                if (list_contains(to_uint16(&buffer[1]))) {
+                    return LOCAL;
+                }
+                if (list_append(to_uint16(&buffer[1])) != EXIT_SUCCESS) {
+                    return ERROR;
+                }
+            }
             return msg[i].parse_func(buffer, msg_len);
         }
     }

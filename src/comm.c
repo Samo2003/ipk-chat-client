@@ -18,6 +18,7 @@ comm_t *get_comm(void) {
         return NULL;
     }
     comm.processing = false;
+    comm.incomplete = false;
     return &comm;
 }
 
@@ -27,5 +28,6 @@ void clean_up_comm(void) {
     close(comm->socket);
     list_destroy();
     queue_destroy();
+    buffer_destroy();
     tcflush(STDIN_FILENO, TCIFLUSH);
 }
