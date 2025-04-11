@@ -11,6 +11,18 @@ const udp_msg_t msg[] = {
     {PING, udp_parse_ping}
 };
 
+static int send_confirm(int sock_fd, uint16_t msg_id) {
+    char *confirm = build_header(CONFIRM, msg_id, 0);
+    PTR_CHECK(confirm)
+    if (sendto(sock_fd, confirm, HEADER_SIZE, 0, client.res->ai_addr, client.res->ai_addrlen) != HEADER_SIZE) {
+        perror("ERROR: sendto");
+        free(confirm);
+        return EXIT_FAILURE;
+    }
+    free(confirm);
+    return EXIT_SUCCESS;
+}
+
 int udp_setup(void) {
     int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock_fd <= 0) {
@@ -45,13 +57,17 @@ void udp_clean_up(int sock_fd) {
 int udp_send_msg(msg_type_t type, int sock_fd) {
     int len = 0;
     char *msg = udp_build_msg(type, &len);
+    bool resend = true;
     PTR_CHECK(msg);
     for (int i = 0; i <= parameters.retransmissions; i++) {
-        if (sendto(sock_fd, msg, len, 0, client.res->ai_addr, client.res->ai_addrlen) != len) {
-            perror("ERROR: sendto");
-            free(msg);
-            return EXIT_FAILURE;
+        if (resend) {
+            if (sendto(sock_fd, msg, len, 0, client.res->ai_addr, client.res->ai_addrlen) != len) {
+                perror("ERROR: sendto");
+                free(msg);
+                return EXIT_FAILURE;
+            }
         }
+        resend = true;
         char buffer[BUFFER_SIZE] = {'0'};
 
         int b_rcv = recvfrom(sock_fd, buffer, BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
@@ -61,20 +77,16 @@ int udp_send_msg(msg_type_t type, int sock_fd) {
                 free(msg);
                 return EXIT_SUCCESS;
             } else {
-                if (buffer[0] != CONFIRM) {
-                    char *confirm = build_header(CONFIRM, to_uint16(&buffer[1]), 0);
-                    if (sendto(sock_fd, confirm, HEADER_SIZE, 0, client.res->ai_addr, client.res->ai_addrlen) != HEADER_SIZE) {
-                        perror("ERROR: sendto");
-                        free(confirm);
-                        return EXIT_FAILURE;
-                    }
-                    free(confirm);
+                if (buffer[0] != CONFIRM && send_confirm(sock_fd, to_uint16(&buffer[1])) != EXIT_SUCCESS) {
+                    return EXIT_FAILURE;
                 }
                 if (!list_contains(to_uint16(&buffer[1]))) {
                     if (!queue_add(buffer, b_rcv) || list_append(to_uint16(&buffer[1])) != EXIT_SUCCESS) {
                         return EXIT_FAILURE;
                     }
                 }
+                i--;
+                resend = false;
             }
         } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
             continue;
@@ -96,13 +108,9 @@ msg_type_t udp_recv_msg(int sock_fd) {
         for (int i = 0; i < MSG_COUNT; i++) {
             if ((uint8_t)buffer[0] == msg[i].type) {
                 if (msg[i].type != CONFIRM) {
-                    char *confirm = build_header(CONFIRM, to_uint16(&buffer[1]), 0);
-                    if (sendto(sock_fd, confirm, HEADER_SIZE, 0, client.res->ai_addr, client.res->ai_addrlen) != HEADER_SIZE) {
-                        perror("ERROR: sendto");
-                        free(confirm);
-                        return EXIT_FAILURE;
+                    if (send_confirm(sock_fd, to_uint16(&buffer[1])) != EXIT_SUCCESS) {
+                        return ERROR;
                     }
-                    free(confirm);
                     if (list_contains(to_uint16(&buffer[1]))) {
                         return LOCAL;
                     }
@@ -113,14 +121,12 @@ msg_type_t udp_recv_msg(int sock_fd) {
                 return msg[i].parse_func(buffer, b_rcv);
             }
         }
-        fprintf(stdout, "ERROR: Unknown message\n");
-        return ERROR;
     }
-    fprintf(stdout, "ERROR: recvfrom fault\n");
+    fprintf(stdout, "ERROR: Unknown message\n");
     return ERROR;
 }
 
-msg_type_t udp_proccess_queued_msg(char *buffer, int msg_len) {
+msg_type_t udp_process_queued_msg(char *buffer, int msg_len) {
     for (int i = 0; i < MSG_COUNT; i++) {
         if ((uint8_t)buffer[0] == msg[i].type) {
             return msg[i].parse_func(buffer, msg_len);

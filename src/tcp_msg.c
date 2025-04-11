@@ -12,7 +12,7 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
         fprintf(stderr, "ERROR: unknown message type\n");
         return NULL;
     }
-    char *message = NULL;
+    char *msg = NULL;
     int len = 0;
 
     switch (type) {
@@ -34,25 +34,24 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
             return NULL;
     }
 
-    message = malloc(len + 1);
-    if (message == NULL) {
-        fprintf(stderr, "ERROR: memory allocation failed\n");
+    msg = malloc(len + 1);
+    if (!msg) {
         return NULL;
     }
 
     switch (type) {
         case ERR:
         case MSG:
-            snprintf(message, len + 1, temp, client.display_name, client.msg_content);
+            snprintf(msg, len + 1, temp, client.display_name, client.msg_content);
             break;
         case AUTH:
-            snprintf(message, len + 1, temp, client.username, client.display_name, client.secret);
+            snprintf(msg, len + 1, temp, client.username, client.display_name, client.secret);
             break;
         case JOIN:
-            snprintf(message, len + 1, temp, client.channel_ID, client.display_name);
+            snprintf(msg, len + 1, temp, client.channel_ID, client.display_name);
             break;
         case BYE:
-            snprintf(message, len + 1, temp, client.display_name);
+            snprintf(msg, len + 1, temp, client.display_name);
             break;
         default:
             fprintf(stderr, "ERROR: unknown message type\n");
@@ -60,56 +59,64 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
     }
 
     *msg_len = len + 1;
-    return message;
+    return msg;
 }
 
 msg_type_t parse_reply(char *buffer) {
-    char msg_content[60001];
-    if (sscanf(buffer, "REPLY OK IS %60000[^\r]", msg_content) == 1) {
+    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    if (sscanf(buffer, "REPLY OK IS %60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "Action Success: %s\n", msg_content);
         return REPLY;
     }
+    fprintf(stdout, "ERROR: Received invalid REPLY\n");
     return ERROR;
 }
 
 msg_type_t parse_nreply(char *buffer) {
-    char message_content[60001];
-    if (sscanf(buffer, "REPLY NOK IS %60000[^\r]", message_content) == 1) {
-        fprintf(stdout, "Action Failure: %s\n", message_content);
+    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    if (sscanf(buffer, "REPLY NOK IS %60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+        fprintf(stdout, "Action Failure: %s\n", msg_content);
         return NREPLY;
     }
+    fprintf(stdout, "ERROR: Received invalid REPLY\n");
     return ERROR;
 }
 
 msg_type_t parse_unexpected(char *buffer) {
-    (void)buffer;
+    fprintf(stdout, "ERROR: Received invalid message: %s", buffer);
     return ERROR;
 }
 
 msg_type_t parse_msg(char *buffer) {
-    char display_name[21];
-    char msg_content[60001];
-    if (sscanf(buffer, "MSG FROM %20s IS %60000[^\r]", display_name, msg_content) == 2) {
+    char display_name[MAX_NAME_SIZE + ZERO_BYTE];
+    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    if (sscanf(buffer, "MSG FROM %20s IS %60000[^\r]\r\n", display_name, msg_content) == 2 && 
+        is_valid_printable(display_name, MAX_NAME_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "%s: %s\n", display_name, msg_content);
         return MSG;
     }
+    fprintf(stdout, "ERROR: Received invalid MSG\n");
     return ERROR;
 }
 
 msg_type_t parse_err(char *buffer) {
-    char display_name[21];
-    char msg_content[60001];
-    if (sscanf(buffer, "ERR FROM %20s IS %60000[^\r]", display_name, msg_content) == 2) {
+    char display_name[MAX_NAME_SIZE + ZERO_BYTE];
+    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    if (sscanf(buffer, "ERR FROM %20s IS %60000[^\r]\r\n", display_name, msg_content) == 2 && 
+        is_valid_printable(display_name, MAX_NAME_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "ERROR FROM %s: %s\n", display_name, msg_content);
         return ERR;
     }
+    fprintf(stdout, "ERROR: Received invalid ERR\n");
     return ERROR;
 }
 
 msg_type_t parse_bye(char *buffer) {
-    char display_name[21];
-    if (sscanf(buffer, "BYE FROM %20s", display_name) == 1) {
+    char display_name[MAX_NAME_SIZE + ZERO_BYTE];
+    if (sscanf(buffer, "BYE FROM %20[^\r]\r\n", display_name) == 1 && is_valid_printable(display_name, MAX_NAME_SIZE)) {
+        printf("%s\n", display_name);
         return BYE;
     }
+    fprintf(stdout, "ERROR: Received invalid BYE\n");
     return ERROR;
 }

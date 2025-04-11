@@ -7,7 +7,7 @@ int state_start(void) {
     if (prompt.input_type == USER) {
         if (prompt.type == AUTH) {
             comm->processing = true;
-            comm->send_msg(AUTH, comm->socket);
+            SEND(AUTH)
             state = state_auth;
         } else if (prompt.type == ERROR) {
             return EXIT_FAILURE;
@@ -15,11 +15,16 @@ int state_start(void) {
             fprintf(stdout, "ERROR: Authentication required\n");
         }
     } else {
-        if (prompt.type == ERR || prompt.type == BYE) {
+        if (prompt.type == ERR) {
+            return EXIT_FAILURE;
+        } else if (prompt.type == BYE) {
             state = NULL;
         } else if (prompt.type != LOCAL) {
             copy(client.msg_content, "Invalid message received", sizeof(client.msg_content));
-            comm->send_msg(ERR, comm->socket);
+            SEND(ERR)
+            if (prompt.type != ERROR) {
+                fprintf(stdout, "ERROR: Received an unexpected message\n");
+            }
             return EXIT_FAILURE;
         }
     }
@@ -31,7 +36,7 @@ int state_auth(void) {
     if (prompt.input_type == USER) {
         if (prompt.type == AUTH) {
             comm->processing = true;
-            comm->send_msg(AUTH, comm->socket);
+            SEND(AUTH)
         } else if (prompt.type == ERROR) {
             return EXIT_FAILURE;
         } else if (prompt.type != LOCAL) {
@@ -43,11 +48,16 @@ int state_auth(void) {
             state = state_open;
         } else if (prompt.type == NREPLY) {
             comm->processing = false;
-        } else if (prompt.type == ERR || prompt.type == BYE) {
+        } else if (prompt.type == ERR) {
+            return EXIT_FAILURE;
+        } else if (prompt.type == BYE) {
             state = NULL;
         } else if (prompt.type != LOCAL) {
             copy(client.msg_content, "Server is not responding", sizeof(client.msg_content));
-            comm->send_msg(ERR, comm->socket);
+            SEND(ERR)
+            if (prompt.type != ERROR) {
+                fprintf(stdout, "ERROR: Received an unexpected message\n");
+            }
             return EXIT_FAILURE;
         }
     }
@@ -61,7 +71,7 @@ int state_open(void) {
             comm->send_msg(MSG, comm->socket);
         } else if (prompt.type == JOIN) {
             comm->processing = true;
-            comm->send_msg(JOIN, comm->socket);
+            SEND(JOIN)
             state = state_join;
         } else if (prompt.type == ERROR) {
             return EXIT_FAILURE;
@@ -69,11 +79,16 @@ int state_open(void) {
             fprintf(stdout, "ERROR: Invalid command\n");
         }
     } else {
-        if (prompt.type == ERR || prompt.type == BYE) {
+        if (prompt.type == ERR) {
+            return EXIT_FAILURE;
+        } else if (prompt.type == BYE) {
             state = NULL;
         } else if (prompt.type != MSG && prompt.type != LOCAL) {
             copy(client.msg_content, "Invalid message received", sizeof(client.msg_content));
-            comm->send_msg(ERR, comm->socket);
+            SEND(ERR)
+            if (prompt.type != ERROR) {
+                fprintf(stdout, "ERROR: Received an unexpected message\n");
+            }
             return EXIT_FAILURE;
         }
     }
@@ -85,22 +100,26 @@ int state_join(void) {
     if (prompt.type == REPLY || prompt.type == NREPLY) {
         comm->processing = false;
         state = state_open;
-    } else if (prompt.type == ERR || prompt.type == BYE) {
+    } else if (prompt.type == ERR) {
+        return EXIT_FAILURE;
+    } else if (prompt.type == BYE) {
         state = NULL;
     } else if (prompt.type != MSG && prompt.type != LOCAL) {
-        copy(client.msg_content, "Invalid message received", sizeof(client.msg_content));
-        comm->send_msg(ERR, comm->socket);
+        copy(client.msg_content, "Server is not responding", sizeof(client.msg_content));
+        SEND(ERR)
+        if (prompt.type != ERROR) {
+            fprintf(stdout, "ERROR: Received an unexpected message\n");
+        }
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
 int state_interupt(void) {
-    comm->send_msg(BYE, comm->socket);
+    SEND(BYE)
     state = NULL;
     return EXIT_SUCCESS;
 }
-
 
 int fsm_start(void) {
     int res = 0;

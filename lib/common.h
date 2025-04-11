@@ -15,6 +15,12 @@
 #include <netdb.h>
 #include <ctype.h>
 
+#define BUFFER_SIZE 1500
+#define MAX_NAME_SIZE 20
+#define MAX_SECRET_SIZE 128
+#define MAX_MSG_SIZE 60000
+#define ZERO_BYTE 1
+
 typedef enum msg_type{
     CONFIRM = 0x00,
     REPLY,
@@ -31,11 +37,12 @@ typedef enum msg_type{
 
 typedef struct client {
     uint16_t msg_id;
-    char username[21];
-    char channel_ID[21];
-    char secret[129];
-    char display_name[21];
-    char msg_content[60001];
+    char username[MAX_NAME_SIZE + ZERO_BYTE];
+    char channel_ID[MAX_NAME_SIZE + ZERO_BYTE];
+    char secret[MAX_SECRET_SIZE + ZERO_BYTE];
+    char display_name[MAX_NAME_SIZE + ZERO_BYTE];
+    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    struct addrinfo *res;
 } client_t;
 
 extern client_t client;
@@ -46,6 +53,10 @@ extern client_t client;
         return EXIT_FAILURE;                                    \
     }
 
-#define BUFFER_SIZE 1500
+
+bool is_valid_alphanum_underscore(char *str, size_t max_len);
+bool is_valid_printable(char *str, size_t max_len);
+bool is_valid_msg_content(char *str, size_t max_len);
+void copy(char *dest, char *src, size_t size);
 
 #endif

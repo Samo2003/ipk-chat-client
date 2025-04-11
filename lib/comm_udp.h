@@ -21,6 +21,6 @@ int udp_setup(void);
 void udp_clean_up(int sock_fd);
 int udp_send_msg(msg_type_t type, int sock_fd);
 msg_type_t udp_recv_msg(int sock_fd);
-msg_type_t udp_proccess_queued_msg(char *buffer, int msg_len);
+msg_type_t udp_process_queued_msg(char *buffer, int msg_len);
 
 #endif

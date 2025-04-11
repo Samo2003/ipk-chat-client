@@ -1,54 +1,13 @@
 #include "../lib/input.h"
 
-bool is_valid_alphanum_underscore(char *str, size_t max_len) {
-    if (strlen(str) > max_len) {
-        return false;
-    }
-    for (int i = 0; str[i]; i++) {
-        if (!isalnum(str[i]) && str[i] != '-' && str[i] != '_') {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool is_valid_printable(char *str, size_t max_len) {
-    if (strlen(str) > max_len) {
-        return false;
-    }
-    for (int i = 0; str[i]; i++) {
-        if (str[i] < 0x21 || str[i] > 0x7E) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool is_valid_msg_content(char *str, size_t max_len) {
-    if (strlen(str) > max_len) {
-        return false;
-    }
-    for (int i = 0; str[i]; i++) {
-        if (!(str[i] == 0x0A || (str[i] >= 0x20 && str[i] <= 0x7E))) {
-            return false;
-        }
-    }
-    return true;
-}
-
-void copy(char *dest, char *src, size_t size) {
-    strncpy(dest, src, size - 1);
-    dest[size - 1] = '\0';
-}
-
 static void  print_client_help(void) {
     fprintf(stdout, "TOODO\n");
 }
 
 static msg_type_t parse_auth(char **args) {
     if (!args[0] || !args[1] || !args[2] || args[3] ||
-        !is_valid_alphanum_underscore(args[0], 20) ||
-        !is_valid_alphanum_underscore(args[1], 128) ||
+        !is_valid_alphanum_underscore(args[0], MAX_NAME_SIZE) ||
+        !is_valid_alphanum_underscore(args[1], MAX_SECRET_SIZE) ||
         !is_valid_printable(args[2], 20)) {
         fprintf(stdout, "ERROR: Invalid /auth\n");
         return LOCAL;
@@ -61,7 +20,7 @@ static msg_type_t parse_auth(char **args) {
 }
 
 static msg_type_t parse_join(char **args) {
-    if (!args[0] || args[1] || !is_valid_alphanum_underscore(args[0], 20)) {
+    if (!args[0] || args[1] || !is_valid_alphanum_underscore(args[0], MAX_NAME_SIZE)) {
         fprintf(stdout, "ERROR: Invalid /join\n");
         return LOCAL;
     }
@@ -71,7 +30,7 @@ static msg_type_t parse_join(char **args) {
 }
 
 static msg_type_t parse_rename(char **args) {
-    if (!args[0] || args[1] || !is_valid_printable(args[0], 20)) {
+    if (!args[0] || args[1] || !is_valid_printable(args[0], MAX_NAME_SIZE)) {
         fprintf(stdout, "ERROR: Invalid /rename\n");
         return LOCAL;
     }
@@ -118,20 +77,18 @@ msg_type_t parse_user_input(void) {
         tokens[count++] = token;
         token = strtok(NULL, " ");
     }
-    if (!tokens[0]) {
-        fprintf(stdout, "ERROR: Invalid input\n");
-        return LOCAL;
-    }
 
-    for (int i = 0; i < COMMAND_COUNT; i++) {
-        if (strcmp(tokens[0], command[i].cmd) == 0) {
-            msg_type_t ret = command[i].parse(&tokens[1]);
-            free(line);
-            free(orig_line);
-            return ret;
+    if (tokens[0]) {
+        for (int i = 0; i < COMMAND_COUNT; i++) {
+            if (strcmp(tokens[0], command[i].cmd) == 0) {
+                msg_type_t ret = command[i].parse(&tokens[1]);
+                free(line);
+                free(orig_line);
+                return ret;
+            }
         }
     }
-    if (!is_valid_msg_content(line, 60000)) {
+    if (!is_valid_msg_content(line, MAX_MSG_SIZE)) {
         fprintf(stdout, "ERROR: Invalid message\n");
         free(line);
         free(orig_line);

@@ -12,9 +12,9 @@ typedef struct msg_temp{
     const char *temp;
     size_t len;
     parse parse_func;
-} msg_temp_t;
+} tcp_msg_temp_t;
 
-extern const msg_temp_t msg_temp[TEMP_COUNT];
+extern const tcp_msg_temp_t msg_temp[TEMP_COUNT];
 
 char *tcp_build_msg(msg_type_t type, int *msg_len);
 msg_type_t parse_reply(char *buffer);

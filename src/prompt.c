@@ -4,8 +4,8 @@ static void calculate_remaining_time(struct timeval *start, struct timeval *rema
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    time_t elapsed_sec = now.tv_sec - start->tv_sec;
-    suseconds_t elapsed_usec = now.tv_usec - start->tv_usec;
+    long elapsed_sec = now.tv_sec - start->tv_sec;
+    long elapsed_usec = now.tv_usec - start->tv_usec;
     
     if (elapsed_usec < 0) {
         elapsed_usec += 1000000;
@@ -27,6 +27,15 @@ prompt_t await(void) {
     int fd_count;
     
     struct timeval start_time, remaining_time, *ptr = NULL;
+
+    if (!queue_is_empty()) {
+        char *msg;
+        int len;
+        queue_front(&msg, &len);
+        prompt.type = udp_process_queued_msg(msg, len);
+        free(msg);
+        return prompt;
+    }
 
     if (comm->processing) {
         gettimeofday(&start_time, NULL);
@@ -65,6 +74,9 @@ prompt_t await(void) {
         }
         if (FD_ISSET(comm->socket, &fd_descs)) {
             prompt.type = comm->recv_msg(comm->socket);
+            if (prompt.type == PING) {
+                continue;
+            }
             return prompt;
         }
         if (!comm->processing && FD_ISSET(STDIN_FILENO, &fd_descs)) {

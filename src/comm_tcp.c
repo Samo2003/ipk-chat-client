@@ -1,6 +1,6 @@
 #include "../lib/comm_tcp.h"
 
-const msg_temp_t msg_temp[] = {
+const tcp_msg_temp_t msg_temp[] = {
     {REPLY, "REPLY OK IS %s\r\n", 7, parse_reply},
     {NREPLY, "REPLY NOK IS %s\r\n", 7, parse_nreply},
     {AUTH, "AUTH %s AS %s USING %s\r\n", 4, parse_unexpected},
@@ -10,27 +10,29 @@ const msg_temp_t msg_temp[] = {
     {BYE, "BYE FROM %s\r\n", 3, parse_bye}
 };
 
-struct addrinfo *tcp_setup(int *sock_fd) {
-    *sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (*sock_fd <= 0) {
+int tcp_setup(void) {
+    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock_fd <= 0) {
         perror("ERROR: TCP socket");
-        return NULL;
+        return -1;
     }
-    struct addrinfo *res = NULL;
+
     struct addrinfo hints = {0};
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(parameters.ip_or_domain, parameters.port, &hints, &res) != 0) {
+    if (getaddrinfo(parameters.ip_or_domain, parameters.port, &hints, &client.res) != 0) {
+        close(sock_fd);
         perror("ERROR: getaddrinfo");
-        return NULL;
+        return -1;
     }
-    if (connect(*sock_fd, res->ai_addr, res->ai_addrlen) != 0) {
+    if (connect(sock_fd, client.res->ai_addr, client.res->ai_addrlen) != 0) {
         perror("ERROR: connect");
-        freeaddrinfo(res);
-        return NULL;
+        close(sock_fd);
+        freeaddrinfo(client.res);
+        return -1;
     }
-    return res;
+    return sock_fd;
 }
 
 void tcp_clean_up(int sock_fd) {
