@@ -11,6 +11,7 @@ typedef struct comm {
     void (*clean_up)(int sock_fd);
     int (*send_msg)(msg_type_t type, int sock_fd);
     msg_type_t (*recv_msg)(int sock_fd);
+    bool (*check_previous_msg)(msg_type_t *type);
     int socket;
     bool processing;
     bool incomplete;

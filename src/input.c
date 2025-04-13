@@ -78,7 +78,7 @@ msg_type_t parse_user_input(void) {
         token = strtok(NULL, " ");
     }
 
-    if (tokens[0]) {
+    if (tokens[0] && tokens[0][0] == '/') {
         for (int i = 0; i < COMMAND_COUNT; i++) {
             if (strcmp(tokens[0], command[i].cmd) == 0) {
                 msg_type_t ret = command[i].parse(&tokens[1]);
@@ -87,6 +87,10 @@ msg_type_t parse_user_input(void) {
                 return ret;
             }
         }
+        free(line);
+        free(orig_line);
+        fprintf(stdout, "ERROR: invalid command\n");
+        return LOCAL;
     }
     if (!is_valid_msg_content(line, MAX_MSG_SIZE)) {
         fprintf(stdout, "ERROR: Invalid message\n");

@@ -25,25 +25,12 @@ prompt_t await(void) {
     prompt_t prompt = {0};
     prompt.input_type = SERVER;
     int fd_count;
-    char *msg;
+    
+    if (comm->check_previous_msg(&prompt.type) && prompt.type != PING) {
+        return prompt;
+    }
     
     struct timeval start_time, remaining_time, *ptr = NULL;
-
-    if (!queue_is_empty()) {
-        int len;
-        queue_front(&msg, &len);
-        prompt.type = udp_process_msg(msg, len, false);
-        free(msg);
-        return prompt;
-    } else if ((msg = buffer_get_msg())) {
-        prompt.type = tcp_process_msg(msg);
-        free(msg);
-        comm->incomplete = !buffer_is_empty();
-        return prompt;
-    } else {
-        comm->incomplete = !buffer_is_empty();
-    }
-
     bool require_response = comm->processing || comm->incomplete;
 
     if (require_response) {

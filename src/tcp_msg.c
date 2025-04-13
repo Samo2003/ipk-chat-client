@@ -1,5 +1,14 @@
 #include "../lib/tcp_msg.h"
 
+static bool match(char **buffer_ptr, char *pattern, int offset) {
+    int len = strlen(pattern);
+    if (strncasecmp(*buffer_ptr + offset, pattern, len) == 0 && strlen(*buffer_ptr + offset + len) > 0) {
+        *buffer_ptr += offset + len;
+        return true;
+    }
+    return false;
+}
+
 char *tcp_build_msg(msg_type_t type, int *msg_len) {
     const char *temp = NULL;
     for (int i = 0; i < TEMP_COUNT; i++) {
@@ -74,7 +83,7 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
 
 msg_type_t parse_reply(char *buffer) {
     char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (sscanf(buffer, "REPLY OK IS %60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    if (match(&buffer, "REPLY OK IS ", 0) && sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "Action Success: %s\n", msg_content);
         return REPLY;
     }
@@ -84,7 +93,7 @@ msg_type_t parse_reply(char *buffer) {
 
 msg_type_t parse_nreply(char *buffer) {
     char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (sscanf(buffer, "REPLY NOK IS %60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    if (match(&buffer, "REPLY NOK IS ", 0) && sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "Action Failure: %s\n", msg_content);
         return NREPLY;
     }
@@ -100,8 +109,9 @@ msg_type_t parse_unexpected(char *buffer) {
 msg_type_t parse_msg(char *buffer) {
     char display_name[MAX_NAME_SIZE + ZERO_BYTE];
     char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (sscanf(buffer, "MSG FROM %20s IS %60000[^\r]\r\n", display_name, msg_content) == 2 && 
-        is_valid_printable(display_name, MAX_NAME_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    if (match(&buffer, "MSG FROM ", 0) && sscanf(buffer, "%20s", display_name) == 1 && 
+        is_valid_printable(display_name, MAX_NAME_SIZE) && match(&buffer, " IS ", strlen(display_name)) &&
+        sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "%s: %s\n", display_name, msg_content);
         return MSG;
     }
@@ -112,8 +122,9 @@ msg_type_t parse_msg(char *buffer) {
 msg_type_t parse_err(char *buffer) {
     char display_name[MAX_NAME_SIZE + ZERO_BYTE];
     char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (sscanf(buffer, "ERR FROM %20s IS %60000[^\r]\r\n", display_name, msg_content) == 2 && 
-        is_valid_printable(display_name, MAX_NAME_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    if (match(&buffer, "ERR FROM ", 0) && sscanf(buffer, "%20s", display_name) == 1 && 
+        is_valid_printable(display_name, MAX_NAME_SIZE) && match(&buffer, " IS ", strlen(display_name)) &&
+        sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "ERROR FROM %s: %s\n", display_name, msg_content);
         return ERR;
     }
@@ -123,8 +134,8 @@ msg_type_t parse_err(char *buffer) {
 
 msg_type_t parse_bye(char *buffer) {
     char display_name[MAX_NAME_SIZE + ZERO_BYTE];
-    if (sscanf(buffer, "BYE FROM %20[^\r]\r\n", display_name) == 1 && is_valid_printable(display_name, MAX_NAME_SIZE)) {
-        printf("%s\n", display_name);
+    if (match(&buffer, "BYE FROM ", 0) && sscanf(buffer, "%20[^\r]\r\n", display_name) == 1 && 
+        is_valid_printable(display_name, MAX_NAME_SIZE)) {
         return BYE;
     }
     fprintf(stdout, "ERROR: Received invalid BYE\n");

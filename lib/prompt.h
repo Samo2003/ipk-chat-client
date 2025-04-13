@@ -8,8 +8,7 @@
 
 typedef enum {
     USER,
-    SERVER,
-    FAULT
+    SERVER
 } input_type_t;
 
 typedef struct prompt {
