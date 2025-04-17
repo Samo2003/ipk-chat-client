@@ -1,0 +1,7 @@
+Receive error after join
+EXIT CODE: 1
+/auth a a a
+/join err
+====
+Action Success: auth OK
+ERROR FROM Server: error

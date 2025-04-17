@@ -1,0 +1,5 @@
+Receive SIGINT in open
+/auth a a a
+KILL
+=====
+Action Success: auth OK

@@ -1,0 +1,7 @@
+Receive error in open state
+EXIT CODE: 1
+/auth a a a
+err
+=====
+Action Success: auth OK
+ERROR FROM Server: error

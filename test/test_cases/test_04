@@ -1,0 +1,5 @@
+Received error after auth
+EXIT CODE: 1
+/auth a err b
+==
+ERROR FROM Server: error

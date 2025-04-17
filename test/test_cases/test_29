@@ -1,0 +1,6 @@
+Receive SIGINT while waiting for reply in auth
+EXIT CODE: 1
+/auth a timeout a
+KILL
+====
+ERROR: 

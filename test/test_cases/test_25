@@ -1,0 +1,10 @@
+Invalid local commands in start
+/help a
+/join channel
+/auth a $ a
+/auth $ a a
+====
+ERROR: 
+ERROR: 
+ERROR:
+ERROR:

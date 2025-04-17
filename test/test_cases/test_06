@@ -1,0 +1,6 @@
+Receive message after auth
+EXIT CODE: 1
+/auth a msg a
+======
+Server: msg
+ERROR: 

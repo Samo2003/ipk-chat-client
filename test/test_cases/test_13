@@ -1,0 +1,5 @@
+Receive bye in open state
+/auth a a a
+bye
+=====
+Action Success: auth OK

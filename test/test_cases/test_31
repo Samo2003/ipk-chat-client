@@ -1,0 +1,8 @@
+Receive SIGINT after join
+/auth a a a
+/join channel
+KILL
+====
+Action Success: auth OK
+Server: welcome
+Action Success: join OK

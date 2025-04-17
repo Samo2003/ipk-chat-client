@@ -1,0 +1,7 @@
+No reply received after join
+EXIT CODE: 1
+/auth a a a
+/join timeout
+====
+Action Success: auth OK
+ERROR: 

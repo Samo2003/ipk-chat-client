@@ -1,0 +1,8 @@
+Reply in open state
+EXIT CODE: 1
+/auth a b c
+reply
+====
+Action Success: auth OK
+Action Success: reply
+ERROR: 

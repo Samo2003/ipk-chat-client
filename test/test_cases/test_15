@@ -1,0 +1,7 @@
+Special case - 2
+/auth a a a
+spec2
+====
+Action Success: auth OK
+Server: spec21
+Server: spec2

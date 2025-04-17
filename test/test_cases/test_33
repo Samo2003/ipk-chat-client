@@ -1,0 +1,8 @@
+Unable to send messages in join
+EXIT CODE: 1
+/auth a a a
+/join timeout
+msg
+====
+Action Success: auth OK
+ERROR: 

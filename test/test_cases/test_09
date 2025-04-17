@@ -1,0 +1,6 @@
+Successful auth after negative reply
+/auth a nreply b
+/auth a b c 
+=====
+Action Failure: 
+Action Success:

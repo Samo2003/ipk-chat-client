@@ -1,0 +1,7 @@
+Receive SIGINT in open after sending a message
+/auth a a a
+msg
+KILL
+===
+Action Success: auth OK
+Server: msg

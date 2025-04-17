@@ -1,0 +1,14 @@
+Invalid local commands in open
+/auth a a a
+/help a
+/test
+/join test.test
+/join $
+/join testtesttesttesttestt
+=====
+Action Success: auth OK
+ERROR:
+ERROR:
+ERROR:
+ERROR:
+ERROR:

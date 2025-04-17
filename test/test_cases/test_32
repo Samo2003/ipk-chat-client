@@ -1,0 +1,8 @@
+Receive SIGINT when waiting for reply after join
+EXIT CODE: 1
+/auth a a a
+/join timeout
+KILL
+====
+Action Success: auth OK
+ERROR: 

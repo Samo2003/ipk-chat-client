@@ -1,0 +1,6 @@
+Receive message in open state
+/auth a a a
+msg
+=====
+Action Success: auth OK
+Server: msg

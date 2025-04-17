@@ -1,0 +1,5 @@
+Receive bye after join
+/auth a a a
+/join bye
+===
+Action Success: auth OK
