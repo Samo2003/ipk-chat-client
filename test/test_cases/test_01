@@ -1,0 +1,4 @@
+Valid auth
+/auth a test b
+==========
+Action Success: auth OK
