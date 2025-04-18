@@ -7,7 +7,16 @@ static void parameters_setup(void) {
 }
 
 static void print_help(void) {
-    fprintf(stdout, "TODO\n");
+    fprintf(stdout,
+        "Usage: ./ipk25chat-client -t <tcp|udp> -s <server> -p <port> [-d <timeout>] [-r <retries>] [-h]\n\n"
+        "Options:\n"
+        "  -t <tcp|udp>        Transport protocol used for connection (required)\n"
+        "  -s <server>         Server IP address or hostname (required)\n"
+        "  -p <port>           Server port number (uint16, required)\n"
+        "  -d <timeout>        UDP confirmation timeout in milliseconds (uint16, default: 250)\n"
+        "  -r <retries>        Maximum number of UDP retransmissions (uint8, default: 3)\n"
+        "  -h                  Show this help message and exit\n"
+    );
     exit(0);
 }
 

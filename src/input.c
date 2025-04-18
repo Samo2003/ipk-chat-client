@@ -1,7 +1,17 @@
 #include "../lib/input.h"
 
 static void  print_client_help(void) {
-    fprintf(stdout, "TOODO\n");
+    fprintf(stdout,
+        "Client Commands:\n"
+        "  /auth {Username} {Secret} {DisplayName}\n"
+        "      Authenticate with the server using the provided credentials.\n\n"
+        "  /join {ChannelID}\n"
+        "      Join the specified chat channel.\n\n"
+        "  /rename {DisplayName}\n"
+        "      Change your local display name (used when sending messages).\n\n"
+        "  /help\n"
+        "      Show this help message.\n"
+    );
 }
 
 static msg_type_t parse_auth(char **args) {
@@ -41,7 +51,7 @@ static msg_type_t parse_rename(char **args) {
 
 static msg_type_t parse_help(char **args) {
     if (args[0]) {
-        fprintf(stdout, "ERROR: invalid /help\n");
+        fprintf(stdout, "ERROR: Invalid /help\n");
         return LOCAL;
     }
     print_client_help();
@@ -89,14 +99,18 @@ msg_type_t parse_user_input(void) {
         }
         free(line);
         free(orig_line);
-        fprintf(stdout, "ERROR: invalid command\n");
+        fprintf(stdout, "ERROR: Invalid command\n");
         return LOCAL;
     }
-    if (!is_valid_msg_content(line, MAX_MSG_SIZE)) {
+    if (!is_valid_msg_content(orig_line, BUFFER_SIZE)) {
         fprintf(stdout, "ERROR: Invalid message\n");
         free(line);
         free(orig_line);
         return LOCAL;
+    }
+    if (strlen(orig_line) > MAX_MSG_SIZE) {
+        orig_line[MAX_MSG_SIZE] = '\0';
+        fprintf(stdout, "ERROR: Truncated message sent\n");
     }
     copy(client.msg_content, orig_line, sizeof(client.msg_content));
     free(line);
