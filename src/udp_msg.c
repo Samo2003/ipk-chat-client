@@ -56,7 +56,7 @@ static bool is_valid_msg_err(char *buffer, int len) {
         return false;
     }
     int display_name_len = strlen(&buffer[HEADER_SIZE]);
-    int content_offset = HEADER_SIZE + ZERO_BYTE + display_name_len + ZERO_BYTE;
+    int content_offset = HEADER_SIZE + display_name_len + ZERO_BYTE;
     if (len < content_offset + 1 + ZERO_BYTE) {
         return false;
     }
@@ -98,7 +98,7 @@ char *udp_build_msg(msg_type_t type, int *msg_len) {
 }
 
 uint16_t to_uint16(char *buffer) {
-    return (uint16_t)((buffer[0] << 8) | buffer[1]);
+    return (uint16_t)(((uint8_t)buffer[0] << 8) | (uint8_t)buffer[1]);
 }
 
 msg_type_t udp_parse_confirm(char *buffer, int msg_len) {

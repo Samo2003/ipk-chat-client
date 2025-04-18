@@ -20,6 +20,7 @@
 #define MAX_SECRET_SIZE 128
 #define MAX_MSG_SIZE 60000
 #define ZERO_BYTE 1
+#define BUFFER_SIZE UINT16_MAX
 
 typedef enum msg_type{
     CONFIRM = 0x00,

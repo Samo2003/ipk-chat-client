@@ -55,8 +55,8 @@ int tcp_send_msg(msg_type_t type, int sock_fd) {
 }
 
 msg_type_t tcp_recv_msg(int sock_fd) {
-    char buffer[TCP_BUFFER_SIZE] = {'\0'};
-    size_t b_rcv = recv(sock_fd, buffer, TCP_BUFFER_SIZE - 1, 0);
+    char buffer[BUFFER_SIZE] = {'\0'};
+    size_t b_rcv = recv(sock_fd, buffer, BUFFER_SIZE - 1, 0);
     if (b_rcv > 0) {
         if (!buffer_append(buffer, b_rcv)) {
             fprintf(stdout, "ERROR: realloc failed in buffer\n");
@@ -76,7 +76,7 @@ msg_type_t tcp_recv_msg(int sock_fd) {
 
 msg_type_t tcp_process_msg(char *buffer) {
     for (int i = 0; i < TEMP_COUNT; i++) {
-        if (strncmp(buffer, msg_temp[i].temp, msg_temp[i].len) == 0) {
+        if (strncasecmp(buffer, msg_temp[i].temp, msg_temp[i].len) == 0) {
             return msg_temp[i].parse_func(buffer);
         }
     }

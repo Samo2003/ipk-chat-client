@@ -15,6 +15,7 @@ int list_append(uint16_t number) {
     if (msg_id_list.capacity == msg_id_list.count) {
         msg_id_list.content = realloc(msg_id_list.content, (msg_id_list.capacity + LIST_LEN) * sizeof(uint16_t));
         PTR_CHECK(msg_id_list.content)
+        msg_id_list.capacity += LIST_LEN;
     }
     msg_id_list.content[msg_id_list.count++] = number;
     return EXIT_SUCCESS;

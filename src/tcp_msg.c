@@ -9,6 +9,22 @@ static bool match(char **buffer_ptr, char *pattern, int offset) {
     return false;
 }
 
+static bool read_till_delimiter(char *buffer, char *dest, int size) {
+    char *msg_end = strstr(buffer, "\r\n");
+    if (msg_end == NULL) {
+        return false;
+    }
+
+    int len = msg_end - buffer;
+    if (len >= size) {
+        len = size;
+    }
+
+    memcpy(dest, buffer, len);
+    dest[len] = '\0';
+    return true;
+}
+
 char *tcp_build_msg(msg_type_t type, int *msg_len) {
     const char *temp = NULL;
     for (int i = 0; i < TEMP_COUNT; i++) {
@@ -43,47 +59,37 @@ char *tcp_build_msg(msg_type_t type, int *msg_len) {
             return NULL;
     }
 
-    if (len > MAX_TCP_PACKET_SIZE) {
-        len = MAX_TCP_PACKET_SIZE;
-        fprintf(stdout, "ERROR: Input massage content was too long truncated massage sent\n");
-    }
-    msg = malloc(len + 1);
+    msg = malloc(len + ZERO_BYTE);
     if (!msg) {
         return NULL;
     }
-    int written = 0;
     switch (type) {
         case ERR:
         case MSG:
-            written = snprintf(msg, len + 1, temp, client.display_name, client.msg_content);
+            snprintf(msg, len + ZERO_BYTE, temp, client.display_name, client.msg_content);
             break;
         case AUTH:
-            written = snprintf(msg, len + 1, temp, client.username, client.display_name, client.secret);
+            snprintf(msg, len + ZERO_BYTE, temp, client.username, client.display_name, client.secret);
             break;
         case JOIN:
-            written = snprintf(msg, len + 1, temp, client.channel_ID, client.display_name);
+            snprintf(msg, len + ZERO_BYTE, temp, client.channel_ID, client.display_name);
             break;
         case BYE:
-            written = snprintf(msg, len + 1, temp, client.display_name);
+            snprintf(msg, len + ZERO_BYTE, temp, client.display_name);
             break;
         default:
             fprintf(stderr, "ERROR: unknown message type\n");
             free(msg);
             return NULL;
     }
-    if (written > len - 2) {
-        written = len - 2;
-    }
-    memcpy(msg + written, "\r\n", 2);
-    msg[written + 2] = '\0';
 
-    *msg_len = written + 2;
+    *msg_len = len;
     return msg;
 }
 
 msg_type_t parse_reply(char *buffer) {
-    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (match(&buffer, "REPLY OK IS ", 0) && sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    char msg_content[BUFFER_SIZE + ZERO_BYTE];
+    if (match(&buffer, "REPLY OK IS ", 0) && read_till_delimiter(buffer, msg_content, BUFFER_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "Action Success: %s\n", msg_content);
         return REPLY;
     }
@@ -92,8 +98,8 @@ msg_type_t parse_reply(char *buffer) {
 }
 
 msg_type_t parse_nreply(char *buffer) {
-    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
-    if (match(&buffer, "REPLY NOK IS ", 0) && sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+    char msg_content[BUFFER_SIZE + ZERO_BYTE];
+    if (match(&buffer, "REPLY NOK IS ", 0) && read_till_delimiter(buffer, msg_content, BUFFER_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "Action Failure: %s\n", msg_content);
         return NREPLY;
     }
@@ -102,16 +108,16 @@ msg_type_t parse_nreply(char *buffer) {
 }
 
 msg_type_t parse_unexpected(char *buffer) {
-    fprintf(stdout, "ERROR: Received invalid message: %s", buffer);
+    fprintf(stdout, "ERROR: Received an invalid message: %s", buffer);
     return ERROR;
 }
 
 msg_type_t parse_msg(char *buffer) {
     char display_name[MAX_NAME_SIZE + ZERO_BYTE];
-    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    char msg_content[BUFFER_SIZE + ZERO_BYTE];
     if (match(&buffer, "MSG FROM ", 0) && sscanf(buffer, "%20s", display_name) == 1 && 
         is_valid_printable(display_name, MAX_NAME_SIZE) && match(&buffer, " IS ", strlen(display_name)) &&
-        sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+        read_till_delimiter(buffer, msg_content, BUFFER_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "%s: %s\n", display_name, msg_content);
         return MSG;
     }
@@ -121,10 +127,10 @@ msg_type_t parse_msg(char *buffer) {
 
 msg_type_t parse_err(char *buffer) {
     char display_name[MAX_NAME_SIZE + ZERO_BYTE];
-    char msg_content[MAX_MSG_SIZE + ZERO_BYTE];
+    char msg_content[BUFFER_SIZE + ZERO_BYTE];
     if (match(&buffer, "ERR FROM ", 0) && sscanf(buffer, "%20s", display_name) == 1 && 
         is_valid_printable(display_name, MAX_NAME_SIZE) && match(&buffer, " IS ", strlen(display_name)) &&
-        sscanf(buffer, "%60000[^\r]\r\n", msg_content) == 1 && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
+        read_till_delimiter(buffer, msg_content, BUFFER_SIZE) && is_valid_msg_content(msg_content, MAX_MSG_SIZE)) {
         fprintf(stdout, "ERROR FROM %s: %s\n", display_name, msg_content);
         return ERR;
     }
@@ -133,8 +139,8 @@ msg_type_t parse_err(char *buffer) {
 }
 
 msg_type_t parse_bye(char *buffer) {
-    char display_name[MAX_NAME_SIZE + ZERO_BYTE];
-    if (match(&buffer, "BYE FROM ", 0) && sscanf(buffer, "%20[^\r]\r\n", display_name) == 1 && 
+    char display_name[MAX_NAME_SIZE + ZERO_BYTE + ZERO_BYTE];
+    if (match(&buffer, "BYE FROM ", 0) && read_till_delimiter(buffer, display_name, MAX_NAME_SIZE + ZERO_BYTE) && 
         is_valid_printable(display_name, MAX_NAME_SIZE)) {
         return BYE;
     }

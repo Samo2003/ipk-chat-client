@@ -3,8 +3,6 @@
 
 #include "common.h"
 
-#define TCP_BUFFER_SIZE 1500 + ZERO_BYTE
-
 typedef struct msg_buffer_t {
     char *msg;
     int msg_len;

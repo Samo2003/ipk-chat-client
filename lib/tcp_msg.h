@@ -5,9 +5,6 @@
 
 #define TEMP_COUNT 7
 
-// 1500 - IP and TCP header size
-#define MAX_TCP_PACKET_SIZE 1460
-
 typedef msg_type_t (*parse)(char *buffer);
 
 typedef struct msg_temp{

@@ -46,7 +46,6 @@ class ClientBase:
         self.addr = addr
         self.state = "START"
         self.display_name = "unknown"
-        self.TCP = False
 
     def parse_msg(self, data):
         raise NotImplementedError
@@ -132,7 +131,6 @@ class TCPClient(ClientBase):
     def __init__(self, sock: socket, addr):
         super().__init__(addr)
         self.sock = sock
-        self.TCP = True
 
     def parse_msg(self, data: str) -> Msg:
         data = data.strip().split()

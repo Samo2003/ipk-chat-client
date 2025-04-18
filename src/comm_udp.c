@@ -68,9 +68,9 @@ int udp_send_msg(msg_type_t type, int sock_fd) {
             }
         }
         resend = true;
-        char buffer[UDP_BUFFER_SIZE] = {'0'};
+        char buffer[BUFFER_SIZE] = {'0'};
 
-        int b_rcv = recvfrom(sock_fd, buffer, UDP_BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
+        int b_rcv = recvfrom(sock_fd, buffer, BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
         if (b_rcv > 0) {
             if (b_rcv == 3 && buffer[0] == CONFIRM && client.msg_id == to_uint16(&buffer[1])) {
                 client.msg_id++;
@@ -102,8 +102,8 @@ int udp_send_msg(msg_type_t type, int sock_fd) {
 }
 
 msg_type_t udp_recv_msg(int sock_fd) {
-    char buffer[UDP_BUFFER_SIZE] = {'\0'};
-    int b_rcv = recvfrom(sock_fd, buffer, UDP_BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
+    char buffer[BUFFER_SIZE] = {'\0'};
+    int b_rcv = recvfrom(sock_fd, buffer, BUFFER_SIZE, 0, client.res->ai_addr, &client.res->ai_addrlen);
     if (b_rcv >= HEADER_SIZE) {
         if (buffer[0] != CONFIRM && send_confirm(sock_fd, to_uint16(&buffer[1])) != EXIT_SUCCESS) {
             return ERROR;

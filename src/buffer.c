@@ -2,9 +2,18 @@
 
 msg_buffer_t msg_buffer = {0};
 
+static char *crlf(void) {
+    for (int i = 0; i < msg_buffer.msg_len - 1; ++i) {
+        if (msg_buffer.msg[i] == '\r' && msg_buffer.msg[i+1] == '\n') {
+            return &msg_buffer.msg[i];
+        }
+    }
+    return NULL;
+}
+
 bool buffer_append(char *msg, int msg_len) {
     if (msg_buffer.msg_len + msg_len > msg_buffer.size) {
-        int new_size = msg_buffer.size + TCP_BUFFER_SIZE;
+        int new_size = msg_buffer.size + BUFFER_SIZE;
         char *new_msg = realloc(msg_buffer.msg, new_size);
         if (!new_msg) {
             return false;
@@ -20,6 +29,9 @@ bool buffer_append(char *msg, int msg_len) {
 void buffer_destroy(void) {
     if (msg_buffer.msg) {
         free(msg_buffer.msg);
+        msg_buffer.msg = NULL;
+        msg_buffer.msg_len = 0;
+        msg_buffer.size = 0;
     }
 }
 
@@ -27,7 +39,7 @@ char *buffer_get_msg(void) {
     if (buffer_is_empty()) {
         return NULL;
     }
-    char *end = memmem(msg_buffer.msg, msg_buffer.msg_len, "\r\n", 2);
+    char *end = crlf();
     if (!end) {
         return NULL;
     }
