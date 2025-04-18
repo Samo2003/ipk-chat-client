@@ -68,7 +68,7 @@ int state_open(void) {
     prompt_t prompt = await();
     if (prompt.input_type == USER) {
         if (prompt.type == MSG) {
-            comm->send_msg(MSG, comm->socket);
+            SEND(MSG)
         } else if (prompt.type == JOIN) {
             comm->processing = true;
             SEND(JOIN)
