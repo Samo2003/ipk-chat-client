@@ -3,8 +3,6 @@
 
 #include "comm_tcp.h"
 #include "comm_udp.h"
-#include "args.h"
-#include <termios.h>
 
 typedef struct comm {
     int (*setup)(void);

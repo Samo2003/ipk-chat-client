@@ -4,8 +4,6 @@
 #include "comm.h"
 #include "input.h"
 
-#include <sys/time.h>
-
 typedef enum {
     USER,
     SERVER

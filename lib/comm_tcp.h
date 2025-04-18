@@ -1,8 +1,6 @@
 #ifndef COMM_TCP_H
 #define COMM_TCP_H
 
-#include "args.h"
-#include "buffer.h"
 #include "tcp_msg.h"
 
 int tcp_setup(void);

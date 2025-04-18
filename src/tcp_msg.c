@@ -14,12 +14,10 @@ static bool read_till_delimiter(char *buffer, char *dest, int size) {
     if (msg_end == NULL) {
         return false;
     }
-
     int len = msg_end - buffer;
     if (len >= size) {
         len = size;
     }
-
     memcpy(dest, buffer, len);
     dest[len] = '\0';
     return true;

@@ -2,9 +2,6 @@
 #define COMM_UDP_H
 
 #include "udp_msg.h"
-#include "args.h"
-#include "list.h"
-#include "queue.h"
 
 #define MSG_COUNT 8
 

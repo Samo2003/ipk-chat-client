@@ -15,6 +15,8 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <signal.h>
+#include <sys/time.h>
+#include <termios.h>
 
 #define MAX_NAME_SIZE 20
 #define MAX_SECRET_SIZE 128

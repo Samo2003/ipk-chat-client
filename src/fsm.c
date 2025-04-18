@@ -121,7 +121,7 @@ int state_interupt(void) {
     return EXIT_SUCCESS;
 }
 
-int fsm_start(void) {
+int fsm(void) {
     int res = 0;
     state = state_start;
     copy(client.display_name, "unknown", sizeof(client.display_name));

@@ -1,7 +1,8 @@
 #ifndef TCP_MSG_H
 #define TCP_MSG_H
 
-#include "common.h"
+#include "args.h"
+#include "buffer.h"
 
 #define TEMP_COUNT 7
 

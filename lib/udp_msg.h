@@ -1,7 +1,9 @@
 #ifndef UDP_MSG_H
 #define UDP_MSG_H
 
-#include "common.h"
+#include "args.h"
+#include "list.h"
+#include "queue.h"
 
 #define HEADER_SIZE 3
 

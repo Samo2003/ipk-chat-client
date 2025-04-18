@@ -15,9 +15,8 @@ int main(int argc, char **argv) {
     if (process_args(argc, argv) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
-    comm = get_comm();
-    if (comm == NULL) {
+    if ((comm = get_comm()) == NULL) {
         return EXIT_FAILURE;
     }
-    return fsm_start();
+    return fsm();
 }
