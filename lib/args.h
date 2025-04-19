@@ -1,3 +1,20 @@
+/**
+ * @file args.h
+ * @brief Defines the structure and macros for handling command-line arguments.
+ *
+ * This module is responsible for parsing and validating the command-line arguments 
+ * provided by the user when running the client application. It ensures that all 
+ * required options are provided and checks for any conflicts or invalid arguments. 
+ * The parsed values are stored in the global `parameters` structure for use throughout 
+ * the client program.
+ *
+ * This module ensures that the user provides all necessary parameters, including 
+ * the transport protocol (TCP or UDP), server IP or domain, port, and optional 
+ * parameters such as timeout and retransmissions for UDP connections.
+ *
+ * @author Samuel Stefanik (xstefas00)
+ * @date 2025-04-19
+ */
 #ifndef ARGS_H
 #define ARGS_H
 
