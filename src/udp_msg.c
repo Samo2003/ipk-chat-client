@@ -105,7 +105,7 @@ msg_type_t udp_parse_confirm(char *buffer, int msg_len) {
     if (msg_len == HEADER_SIZE && to_uint16(&buffer[1]) < client.msg_id) {
         return LOCAL;
     }
-    fprintf(stdout, "ERROR: Received an CONFIRM\n");
+    fprintf(stdout, "ERROR: Received an unexpected CONFIRM\n");
     return ERROR;
 }
 
