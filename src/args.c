@@ -1,11 +1,28 @@
+/**
+ * @file args.c
+ * @brief Argument parsing for ipk25chat client.
+ *
+ * Handles CLI argument parsing using getopt, stores results in `parameters`.
+ *
+ * @author: Samuel Stefanik (xstefas00)
+ * @date: 2025-04-19
+ */
 #include "../lib/args.h"
 
+/**
+ * @brief Initializes default values for optional arguments.
+ */
 static void parameters_setup(void) {
     parameters.port = "4567";
     parameters.timeout = 250;
     parameters.retransmissions = 3;
 }
 
+/**
+ * @brief Prints help message to stdout and exits.
+ * 
+ * @note This functions was created using ChatGPT
+ */
 static void print_help(void) {
     fprintf(stdout,
         "Usage: ./ipk25chat-client -t <tcp|udp> -s <server> -p <port> [-d <timeout>] [-r <retries>] [-h]\n\n"
@@ -20,6 +37,13 @@ static void print_help(void) {
     exit(0);
 }
 
+/**
+ * @brief Parses and sets the transport protocol.
+ * 
+ * @return true on success, false on invalid protocol.
+ * 
+ * @note This functions was created using ChatGPT
+ */
 static bool set_protocol(void) {
     if (strcmp(optarg, "tcp") == 0) {
         parameters.tcp = true;
@@ -32,7 +56,16 @@ static bool set_protocol(void) {
     return false;
 }
 
-bool parse_int(long max, long *out) {
+/**
+ * @brief Converts and validates numeric arguments from CLI.
+ * 
+ * @param max Maximum allowed value.
+ * @param out Output pointer to store the result.
+ * @return true on success, false on invalid input.
+ * 
+ * @note This function was created using ChatGPT
+ */
+static bool parse_int(long max, long *out) {
     char *endptr;
     long val = strtol(optarg, &endptr, 10);
     if (errno != 0 || *endptr != '\0' || val < 0 || val > max) {
@@ -43,6 +76,13 @@ bool parse_int(long max, long *out) {
     return true;
 }
 
+/**
+ * @brief Parses CLI arguments and validates required ones.
+ * 
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @return EXIT_SUCCESS or EXIT_FAILURE.
+ */
 int process_args(int argc, char **argv) {
     parameters_setup();
     int opt;

@@ -1,28 +1,17 @@
+/**
+ * @file comm.c
+ * @brief Implementation of communication backend initialization and cleanup.
+ * 
+ * @author Samuel Stefanik
+ * @date 2025-04-19
+ */
 #include "../lib/comm.h"
 
-static bool tcp_check_previous(msg_type_t *type) {
-    char *msg;
-    if ((msg = buffer_get_msg())) {
-        *type = tcp_process_msg(msg);
-        free(msg);
-        return true;
-    }
-    comm->incomplete = !buffer_is_empty();
-    return false;
-}
-
-static bool udp_check_previous(msg_type_t *type) {
-    int len;
-    char *msg;
-    if (!queue_is_empty()) {
-        queue_front(&msg, &len);
-        *type = udp_process_msg(msg, len, false);
-        free(msg);
-        return true;
-    }
-    return false;
-}
-
+/**
+ * @brief Initializes and returns a pointer to the communication interface.
+ *
+ * @return Pointer to a statically allocated comm_t structure, or NULL on failure.
+ */
 comm_t *get_comm(void) {
     static comm_t comm = {0};
     if (parameters.tcp) {
@@ -43,10 +32,15 @@ comm_t *get_comm(void) {
         return NULL;
     }
     comm.processing = false;
-    comm.incomplete = false;
     return &comm;
 }
 
+/**
+ * @brief Cleans up resources related to communication and the client.
+ *
+ * Frees network resources, closes the socket, and destroys all shared
+ * buffers, lists, and queues used by the client. Also flushes the terminal input.
+ */
 void clean_up_comm(void) {
     comm->clean_up(comm->socket);
     freeaddrinfo(client.res);

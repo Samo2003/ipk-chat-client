@@ -1,5 +1,17 @@
+/**
+ * @file input.c
+ * @brief Handles parsing and validation of user input from stdin.
+ * 
+ * @author Samuel Stefanik (xstefas00)
+ * @date 2025-04-19
+ */
 #include "../lib/input.h"
 
+/**
+ * @brief Displays a help message listing available client commands.
+ * 
+ * @note This functions was created using ChatGPT
+ */
 static void  print_client_help(void) {
     fprintf(stdout,
         "Client Commands:\n"
@@ -14,6 +26,12 @@ static void  print_client_help(void) {
     );
 }
 
+/**
+ * @brief Parses the /auth command and updates client credentials.
+ * 
+ * @param args Array of strings containing the command arguments.
+ * @return AUTH on success, LOCAL on invalid input.
+ */
 static msg_type_t parse_auth(char **args) {
     if (!args[0] || !args[1] || !args[2] || args[3] ||
         !is_valid_alphanum_underscore(args[0], MAX_NAME_SIZE) ||
@@ -29,6 +47,12 @@ static msg_type_t parse_auth(char **args) {
     return AUTH;
 }
 
+/**
+ * @brief Parses the /join command and updates the client's channel ID.
+ * 
+ * @param args Array of strings containing the command arguments.
+ * @return JOIN on success, LOCAL on invalid input.
+ */
 static msg_type_t parse_join(char **args) {
     if (!args[0] || args[1] || !is_valid_alphanum_underscore(args[0], MAX_NAME_SIZE)) {
         fprintf(stdout, "ERROR: Invalid /join\n");
@@ -39,6 +63,12 @@ static msg_type_t parse_join(char **args) {
     return JOIN;
 }
 
+/**
+ * @brief Parses the /rename command and updates the client's display name.
+ * 
+ * @param args Array of strings containing the command arguments.
+ * @return LOCAL, whether success or error (affects only local state).
+ */
 static msg_type_t parse_rename(char **args) {
     if (!args[0] || args[1] || !is_valid_printable(args[0], MAX_NAME_SIZE)) {
         fprintf(stdout, "ERROR: Invalid /rename\n");
@@ -49,6 +79,12 @@ static msg_type_t parse_rename(char **args) {
     return LOCAL;
 }
 
+/**
+ * @brief Parses the /help command and displays help if valid.
+ * 
+ * @param args Array of strings containing the command arguments.
+ * @return LOCAL always.
+ */
 static msg_type_t parse_help(char **args) {
     if (args[0]) {
         fprintf(stdout, "ERROR: Invalid /help\n");
@@ -58,13 +94,25 @@ static msg_type_t parse_help(char **args) {
     return LOCAL;
 }
 
+/**
+ * @brief Table of supported commands and their corresponding parser functions.
+ */
 static const command_t command[] = {
-    {"/auth", parse_auth},
-    {"/join", parse_join},
-    {"/rename", parse_rename},
-    {"/help", parse_help}
+    {"/auth", parse_auth},     /**< Command for authenticating the user. */
+    {"/join", parse_join},     /**< Command for joining a chat channel. */
+    {"/rename", parse_rename}, /**< Command for changing display name. */
+    {"/help", parse_help}      /**< Command for displaying help. */
 };
 
+/**
+ * @brief Parses a full line of user input from stdin.
+ * 
+ * This function supports command parsing (starting with /) or sending
+ * general messages. It performs input validation and handles truncation
+ * if the message exceeds MAX_MSG_SIZE.
+ * 
+ * @return A value of type msg_type_t representing the parsed message type.
+ */
 msg_type_t parse_user_input(void) {
     char *line = NULL;
     size_t len = 0;
@@ -77,8 +125,8 @@ msg_type_t parse_user_input(void) {
         perror("readline error");
         return ERROR;
     }
-    line[strcspn(line, "\n")] = '\0';
-    char *orig_line = strdup(line);
+    line[strcspn(line, "\n")] = '\0';   // Remove newline character
+    char *orig_line = strdup(line);     // Preserve full original input
 
     char *tokens[5] = {0};
     int count = 0;
