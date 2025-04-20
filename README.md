@@ -172,6 +172,7 @@ The first six packets captured show the `TCP` variant of the protocol, where it 
 ## Bibliography
 - GeekForGeeks, _Client Server Communication in Operating System_ [online]. December 2023. [cited 2025-04-20]. Available at: https://www.geeksforgeeks.org/client-server-communication-in-operating-system/
 - GeekForGeeks, _Differences between TCP and UDP_ [online]. December 2024. [cited 2025-04-20]. Available at: https://www.geeksforgeeks.org/differences-between-tcp-and-udp/
+- Dolejska, D. _IPK Project 2: Client for a chat server using the IPK25-CHAT protocol_ [online]. 2025. [cited 2025-04-20]. Available at: https://git.fit.vutbr.cz/NESFIT/IPK-Projects/src/branch/master/Project_2
 - **[RFC5234]** Crocker, D. and Overell, P. _Augmented BNF for Syntax Specifications: ABNF_ [online]. January 2008. [cited 2025-04-10]. DOI: 10.17487/RFC5234. Available at: https://datatracker.ietf.org/doc/html/rfc5234
 - **[RFC9293]** Eddy, W. _Transmission Control Protocol (TCP)_ [online]. August 2022. [cited 2025-04-20]. DOI: 10.17487/RFC9293. Available at: https://datatracker.ietf.org/doc/html/rfc9293
 - **[RFC768]** Postel, J. _User Datagram Protocol_ [online]. March 1997. [cited 2025-04-20]. DOI: 10.17487/RFC0768. Available at: https://datatracker.ietf.org/doc/html/rfc768
