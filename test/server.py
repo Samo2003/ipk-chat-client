@@ -202,11 +202,11 @@ class UDPClient(ClientBase):
 
     def handle(self, data):
         msg = self.parse_msg(data)
+        if msg.type == "MSG" and msg.cont == "spec2":
+            self.send(self.msg_fact.msg(self.msg_id, "Server", "spec21"))
         if msg.type != "CONFIRM" and msg.cont != "mal1":
             self.last_id = msg.id
             self.sock.sendto(self.msg_fact.confirm(msg.id), self.addr)
-        if msg.type == "MSG" and msg.cont == "spec2":
-            self.send(self.msg_fact.msg(self.msg_id, "Server", "spec21"))
         self.transition(msg)
 
     def parse_msg(self, data: bytes) -> Msg:
