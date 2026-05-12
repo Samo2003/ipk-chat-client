@@ -1,4 +1,4 @@
-# IPK Project 2
+# IPK Chat Client
 
 ## Introduction
 This project is a chat client using the `IPK25-CHAT` protocol to communicate, implementing its `TCP` and `UDP` variants. Further information about this protocol can be found [here](https://git.fit.vutbr.cz/NESFIT/IPK-Projects/src/branch/master/Project_2). The program supports IPv4 network layer protocol. Upon execution, it uses the specified protocol variant and allows communication with the server.
